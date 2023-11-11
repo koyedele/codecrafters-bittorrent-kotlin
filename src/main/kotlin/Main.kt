@@ -9,12 +9,12 @@ fun main(args: Array<String>) {
     val command = args[0]
     when (command) {
         "decode" -> {
-             val bencodedValue = args[1]
-             val decoded = if (bencodedValue.startsWith("i")) {
-                 Bencode().decode(bencodedValue.toByteArray(), Type.NUMBER)
-             } else {
-                 Bencode().decode(bencodedValue.toByteArray(), Type.STRING)
-             }
+            val bencodedValue = args[1]
+            val decoded: Any = when {
+                bencodedValue.startsWith("i") -> Bencode().decode(bencodedValue.toByteArray(), Type.NUMBER)
+                bencodedValue.startsWith("l") -> Bencode().decode(bencodedValue.toByteArray(), Type.LIST)
+                else -> Bencode().decode(bencodedValue.toByteArray(), Type.STRING)
+            }
              println(gson.toJson(decoded))
              return
         }

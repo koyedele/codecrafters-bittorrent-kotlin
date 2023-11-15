@@ -2,9 +2,11 @@ import com.google.gson.Gson;
 import com.dampcake.bencode.Bencode
 import com.dampcake.bencode.Type
 import java.io.File
+import java.lang.RuntimeException
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
 
 val gson = Gson()
 
@@ -35,14 +37,17 @@ class ListValue(private val value: List<Any>) : Value {
 }
 
 class DictValue(private val value: Map<String, Any>) : Value {
+    operator fun get(key: String) = value[key]
+
     override fun toJson(): String = gson.toJson(value)
 }
 
 @Suppress("UNCHECKED_CAST")
-class MetaInfo(private val value: Map<String, Any>) : Value {
+class MetaInfo(private val value: DictValue) : Value {
     private val info: Map<String, Any> = value["info"] as Map<String, Any>
 
-    fun trackerUrl(): String = (value["announce"] as ByteBuffer).array().toString(Charset.defaultCharset())
+    fun trackerUrl(): String =
+        (value["announce"] as ByteBuffer).array().toString(Charset.defaultCharset())
 
     fun length(): Int = (info["length"] as Long).toInt()
 
@@ -56,25 +61,32 @@ class MetaInfo(private val value: Map<String, Any>) : Value {
     }
 
     fun pieceHashes(): List<String> {
-        return pieces().asIterable().chunked(20).map { it.joinToString("") { str -> "%02x".format(str) }  }
+        return pieces()
+            .asIterable()
+            .chunked(20)
+            .map { it.joinToString("") { str -> "%02x".format(str) } }
     }
 
     private fun pieces(): ByteArray = (info["pieces"] as ByteBuffer).array()
 
     private fun sha1Hash(data: ByteArray): String {
-        val md = MessageDigest.getInstance("SHA-1")
-        val digest = md.digest(data)
-        return digest.joinToString("") { "%02x".format(it) }
+        return try {
+            val md = MessageDigest.getInstance("SHA-1")
+            val digest = md.digest(data)
+            digest.joinToString("") { "%02x".format(it) }
+        } catch (e: NoSuchAlgorithmException) {
+            throw RuntimeException(e)
+        }
     }
 
     override fun toString(): String = toJson()
 
-    override fun toJson(): String = gson.toJson(value)
+    override fun toJson(): String = value.toJson()
 }
 
 private fun <T> decode(input: ByteArray, type: Type<T>): T = Bencode().decode(input, type)
 
-private fun parse(encodedValue: String) : Value {
+private fun parse(encodedValue: String): Value {
     return when {
         encodedValue[0] in '1'..'9' -> StringValue(decode(encodedValue.toByteArray(), Type.STRING))
         encodedValue.startsWith("i") -> IntValue(decode(encodedValue.toByteArray(), Type.NUMBER))
@@ -83,6 +95,7 @@ private fun parse(encodedValue: String) : Value {
         else -> throw IllegalArgumentException("Unknown input: $encodedValue")
     }
 }
+
 private fun runDecodeCommand(input: String) {
     val decoded = parse(input)
     println(decoded.toJson())
@@ -90,7 +103,7 @@ private fun runDecodeCommand(input: String) {
 
 private fun runInfoCommand(filePath: String) {
     val contents = File(filePath).readBytes()
-    val decoded = Bencode(true).decode(contents, Type.DICTIONARY)
+    val decoded = DictValue(Bencode(true).decode(contents, Type.DICTIONARY))
     val metaInfo = MetaInfo(decoded)
     println("Tracker URL: ${metaInfo.trackerUrl()}")
     println("Length: ${metaInfo.length()}")

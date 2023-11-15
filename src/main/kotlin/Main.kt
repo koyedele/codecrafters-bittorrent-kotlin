@@ -2,6 +2,10 @@ import com.google.gson.Gson;
 import com.dampcake.bencode.Bencode
 import com.dampcake.bencode.Type
 import java.io.File
+import java.math.BigInteger
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
+import java.security.MessageDigest
 
 val gson = Gson()
 
@@ -39,15 +43,26 @@ class DictValue(private val value: Map<String, Any>) : Value {
 class MetaInfo(private val value: Map<String, Any>) : Value {
     private val info: Map<String, Any> = value["info"] as Map<String, Any>
 
-    fun trackerUrl(): String = value["announce"] as String
+    fun trackerUrl(): String = (value["announce"] as ByteBuffer).array().toString(Charset.defaultCharset())
 
-    fun length(): Int = IntValue(info["length"] as Long).asInt()
+    fun length(): Int = (info["length"] as Long).toInt()
 
-    fun name(): String = info["name"] as String
+    fun name(): String = (info["name"] as ByteBuffer).array().toString(Charset.defaultCharset())
 
-    fun pieceLength(): Int = IntValue(info["piece length"] as Long).asInt()
+    fun pieceLength(): Int = (info["piece length"] as Long).toInt()
 
-    fun pieces(): String = info["pieces"] as String
+    fun pieces(): ByteArray = (info["pieces"] as ByteBuffer).array()
+
+    fun infoHash(): String {
+        val encoded = Bencode().encode(info)
+        return sha1Hash(encoded)
+    }
+
+    private fun sha1Hash(data: ByteArray): String {
+        val md = MessageDigest.getInstance("SHA-1")
+        val digest = md.digest(data)
+        return digest.joinToString("") { "%02x".format(it) }
+    }
 
     override fun toString(): String = toJson()
 
@@ -72,8 +87,10 @@ private fun runDecodeCommand(input: String) {
 
 private fun runInfoCommand(filePath: String) {
     val contents = File(filePath).readBytes()
-    val decoded = decode(contents, Type.DICTIONARY)
+    println(contents.toString(Charset.defaultCharset()))
+    val decoded = Bencode(true).decode(contents, Type.DICTIONARY)
     val metaInfo = MetaInfo(decoded)
     println("Tracker URL: ${metaInfo.trackerUrl()}")
     println("Length: ${metaInfo.length()}")
+    println("Info Hash: ${metaInfo.infoHash()}")
 }

@@ -9,10 +9,13 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 
 val gson = Gson()
+const val INTEGER_TAG = "i"
+const val LIST_TAG = "l"
+const val DICT_TAG = "d"
+const val NUM_BYTES_IN_PIECE_HASH = 20
 
 fun main(args: Array<String>) {
-    val command = args[0]
-    when (command) {
+    when (val command = args[0]) {
         "decode" -> runDecodeCommand(args[1])
         "info" -> runInfoCommand(args[1])
         else -> println("Unknown command $command")
@@ -63,7 +66,7 @@ class MetaInfo(private val value: DictValue) : Value {
     fun pieceHashes(): List<String> {
         return pieces()
             .asIterable()
-            .chunked(20)
+            .chunked(NUM_BYTES_IN_PIECE_HASH)
             .map { it.joinToString("") { str -> "%02x".format(str) } }
     }
 
@@ -89,9 +92,9 @@ private fun <T> decode(input: ByteArray, type: Type<T>): T = Bencode().decode(in
 private fun parse(encodedValue: String): Value {
     return when {
         encodedValue[0] in '1'..'9' -> StringValue(decode(encodedValue.toByteArray(), Type.STRING))
-        encodedValue.startsWith("i") -> IntValue(decode(encodedValue.toByteArray(), Type.NUMBER))
-        encodedValue.startsWith("l") -> ListValue(decode(encodedValue.toByteArray(), Type.LIST))
-        encodedValue.startsWith("d") -> DictValue(decode(encodedValue.toByteArray(), Type.DICTIONARY))
+        encodedValue.startsWith(INTEGER_TAG) -> IntValue(decode(encodedValue.toByteArray(), Type.NUMBER))
+        encodedValue.startsWith(LIST_TAG) -> ListValue(decode(encodedValue.toByteArray(), Type.LIST))
+        encodedValue.startsWith(DICT_TAG) -> DictValue(decode(encodedValue.toByteArray(), Type.DICTIONARY))
         else -> throw IllegalArgumentException("Unknown input: $encodedValue")
     }
 }

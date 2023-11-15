@@ -2,7 +2,6 @@ import com.google.gson.Gson;
 import com.dampcake.bencode.Bencode
 import com.dampcake.bencode.Type
 import java.io.File
-import java.math.BigInteger
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.security.MessageDigest
@@ -51,12 +50,16 @@ class MetaInfo(private val value: Map<String, Any>) : Value {
 
     fun pieceLength(): Int = (info["piece length"] as Long).toInt()
 
-    fun pieces(): ByteArray = (info["pieces"] as ByteBuffer).array()
-
     fun infoHash(): String {
         val encoded = Bencode().encode(info)
         return sha1Hash(encoded)
     }
+
+    fun pieceHashes(): List<String> {
+        return pieces().asIterable().chunked(20).map { it.joinToString("") { str -> "%02x".format(str) }  }
+    }
+
+    private fun pieces(): ByteArray = (info["pieces"] as ByteBuffer).array()
 
     private fun sha1Hash(data: ByteArray): String {
         val md = MessageDigest.getInstance("SHA-1")
@@ -87,10 +90,13 @@ private fun runDecodeCommand(input: String) {
 
 private fun runInfoCommand(filePath: String) {
     val contents = File(filePath).readBytes()
-    println(contents.toString(Charset.defaultCharset()))
     val decoded = Bencode(true).decode(contents, Type.DICTIONARY)
     val metaInfo = MetaInfo(decoded)
     println("Tracker URL: ${metaInfo.trackerUrl()}")
     println("Length: ${metaInfo.length()}")
     println("Info Hash: ${metaInfo.infoHash()}")
+    println("Piece Length: ${metaInfo.pieceLength()}")
+    println("Piece Hashes:")
+    println(metaInfo.pieceHashes().joinToString("\n"))
+
 }

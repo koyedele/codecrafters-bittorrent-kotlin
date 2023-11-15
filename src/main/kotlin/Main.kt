@@ -89,7 +89,7 @@ class MetaInfo(private val value: DictValue) : Value {
 
 private fun <T> decode(input: ByteArray, type: Type<T>): T = Bencode().decode(input, type)
 
-private fun parse(encodedValue: String): Value {
+private fun parseValue(encodedValue: String): Value {
     return when {
         encodedValue[0] in '1'..'9' -> StringValue(decode(encodedValue.toByteArray(), Type.STRING))
         encodedValue.startsWith(INTEGER_TAG) -> IntValue(decode(encodedValue.toByteArray(), Type.NUMBER))
@@ -99,15 +99,19 @@ private fun parse(encodedValue: String): Value {
     }
 }
 
+private fun parseMetaInfo(encodedBytes: ByteArray): MetaInfo {
+    val decoded = DictValue(Bencode(true).decode(encodedBytes, Type.DICTIONARY))
+    return MetaInfo(decoded)
+}
+
 private fun runDecodeCommand(input: String) {
-    val decoded = parse(input)
+    val decoded = parseValue(input)
     println(decoded.toJson())
 }
 
 private fun runInfoCommand(filePath: String) {
     val contents = File(filePath).readBytes()
-    val decoded = DictValue(Bencode(true).decode(contents, Type.DICTIONARY))
-    val metaInfo = MetaInfo(decoded)
+    val metaInfo = parseMetaInfo(contents)
     println("Tracker URL: ${metaInfo.trackerUrl()}")
     println("Length: ${metaInfo.length()}")
     println("Info Hash: ${metaInfo.infoHash()}")

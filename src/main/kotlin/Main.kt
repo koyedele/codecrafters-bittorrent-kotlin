@@ -1,7 +1,4 @@
-import commands.DecodeCommand
-import commands.HandshakeCommand
-import commands.InfoCommand
-import commands.PeersCommand
+import commands.*
 
 fun main(args: Array<String>) {
     if (args.size < 2) {
@@ -14,11 +11,12 @@ fun main(args: Array<String>) {
             "info" -> InfoCommand(args[1]).run()
             "peers" -> PeersCommand(args[1]).run()
             "handshake" -> HandshakeCommand(args[1], args[2]).run()
+            "download_piece" -> DownloadPieceCommand(args[2], args[3], args[4].toInt()).run()
             else -> println("Unknown command $command")
         }
     } catch (e: Exception) {
-        println(e.message)
         help()
+        throw e
     }
 }
 

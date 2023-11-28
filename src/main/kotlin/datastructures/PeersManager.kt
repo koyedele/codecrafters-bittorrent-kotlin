@@ -36,7 +36,8 @@ class PeersManager(private val metaInfo: MetaInfo) {
         val con: HttpURLConnection = url.openConnection() as HttpURLConnection
         con.setRequestMethod("GET")
 
-        val encodedBytes = con.inputStream.readBytes()
+        val encodedBytes = con.inputStream.use { it.readBytes() }
+
         val dict = DictValue.of(encodedBytes)
         val encodedPeers = (dict["peers"] as ByteBuffer).array()
 

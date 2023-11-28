@@ -3,6 +3,7 @@ package datastructures
 import com.dampcake.bencode.Bencode
 import com.dampcake.bencode.Type
 import util.Crypto.sha1Hash
+import java.io.File
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 
@@ -30,8 +31,9 @@ class MetaInfo(private val value: DictValue) : Value {
     override fun toJson(): String = value.toJson()
 
     companion object {
-         fun parseMetaInfo(encodedBytes: ByteArray): MetaInfo {
-            val decoded = DictValue(Bencode(true).decode(encodedBytes, Type.DICTIONARY))
+        fun fromFile(filePath: String): MetaInfo {
+            val contents = File(filePath).readBytes()
+            val decoded = DictValue(Bencode(true).decode(contents, Type.DICTIONARY))
             return MetaInfo(decoded)
         }
     }

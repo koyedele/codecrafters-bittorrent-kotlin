@@ -2,12 +2,10 @@ package datastructures
 
 import constants.PEER_HANDSHAKE_LENGTH_BYTES
 import datastructures.state.ReadyForDownload
-import kotlinx.coroutines.runBlocking
 import util.Encoders
 import util.PieceDownloader
 import java.io.DataInputStream
 import java.io.File
-import java.lang.IllegalStateException
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -39,7 +37,7 @@ class RemotePeer {
 
     fun handShake(metaInfo: MetaInfo): String {
         socket.connect(peer)
-        peerConnection = RemotePeerConnection(socket, metaInfo)
+        peerConnection = RemotePeerConnection(socket)
 
         val outputStream = socket.getOutputStream()
         val inputStream = DataInputStream(socket.getInputStream())

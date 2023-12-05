@@ -11,7 +11,7 @@ import java.net.Socket
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class RemotePeerConnection(socket: Socket, private val metaInfo: MetaInfo) {
+class RemotePeerConnection(socket: Socket) {
     var state: RemotePeerConnectionState = BitfieldState()
     private val inputStream: DataInputStream = DataInputStream(socket.getInputStream())
     private val outputStream: OutputStream = socket.getOutputStream()
@@ -69,9 +69,5 @@ class RemotePeerConnection(socket: Socket, private val metaInfo: MetaInfo) {
         buffer.get(data)
         println("Sending payload: ${data.contentToString()}")
         outputStream.write(data)
-    }
-
-    fun download() {
-
     }
 }

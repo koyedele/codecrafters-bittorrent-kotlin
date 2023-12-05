@@ -2,15 +2,12 @@ package datastructures
 
 import constants.NUM_BYTES_OF_EACH_PEER_IN_LIST
 import util.Encoders
-import util.toInt
 import util.toPort
-import util.toShort
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.URL
 import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 class PeersManager(private val metaInfo: MetaInfo) {
     private val peers: List<RemotePeer> by lazy { retrieveRemotePeers() }

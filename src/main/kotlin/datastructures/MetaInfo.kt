@@ -2,6 +2,7 @@ package datastructures
 
 import com.dampcake.bencode.Bencode
 import com.dampcake.bencode.Type
+import constants.NUM_BYTES_OF_EACH_PIECE_IN_PIECE_HASH
 import util.Crypto.sha1Hash
 import java.io.File
 import java.nio.ByteBuffer
@@ -20,7 +21,11 @@ class MetaInfo(private val value: DictValue) : Value {
 
     fun pieceLength(): Int = (info["piece length"] as Long).toInt()
 
-    fun piecesBytes(): ByteArray = (info["pieces"] as ByteBuffer).array()
+    fun piecesBytes(): List<ByteArray> = (info["pieces"] as ByteBuffer)
+        .array()
+        .asIterable()
+        .chunked(NUM_BYTES_OF_EACH_PIECE_IN_PIECE_HASH)
+        .map { it.toByteArray() }
 
     fun infoHashBytes(): ByteArray = sha1Hash(infoBytes())
 

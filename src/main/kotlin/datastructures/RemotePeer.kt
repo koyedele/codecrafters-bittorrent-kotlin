@@ -1,9 +1,12 @@
 package datastructures
 
 import constants.PEER_HANDSHAKE_LENGTH_BYTES
-import datastructures.state.NullState
+import datastructures.state.ReadyForDownload
+import kotlinx.coroutines.runBlocking
 import util.Encoders
+import util.PieceDownloader
 import java.io.DataInputStream
+import java.io.File
 import java.lang.IllegalStateException
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -36,7 +39,7 @@ class RemotePeer {
 
     fun handShake(metaInfo: MetaInfo): String {
         socket.connect(peer)
-        peerConnection = RemotePeerConnection(socket)
+        peerConnection = RemotePeerConnection(socket, metaInfo)
 
         val outputStream = socket.getOutputStream()
         val inputStream = DataInputStream(socket.getInputStream())
@@ -52,14 +55,22 @@ class RemotePeer {
         return Encoders.hexEncode(response.copyOfRange(48, response.size))
     }
 
-    fun peerMessages() {
+    fun getReadyForDownload() {
         if (!this::peerConnection.isInitialized) {
             throw IllegalStateException("peer messages cannot be read because peer handshake has not been done")
         }
 
-        while (peerConnection.state !is NullState) {
+        while (peerConnection.state !is ReadyForDownload) {
             peerConnection.process()
         }
+        println("Connection is now ready for download")
+    }
+
+    suspend fun downloadPiece(metaInfo: MetaInfo, pieceNumber: Int, outputFile: String) {
+        val downloader = PieceDownloader(metaInfo, peerConnection)
+        val piece = downloader.download(pieceNumber)
+        val file = File(outputFile)
+        file.writeBytes(piece)
     }
 
     fun close() {

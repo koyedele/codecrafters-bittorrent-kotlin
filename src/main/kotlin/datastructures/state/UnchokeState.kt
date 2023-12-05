@@ -5,7 +5,7 @@ import datastructures.RemotePeerConnection
 
 class UnchokeState : RemotePeerConnectionState {
     override fun next(connection: RemotePeerConnection) {
-        connection.state = NullState()
+        connection.state = ReadyForDownload()
     }
 
     override fun process(connection: RemotePeerConnection) {

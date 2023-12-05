@@ -2,7 +2,7 @@ package datastructures.state
 
 import datastructures.RemotePeerConnection
 
-class NullState : RemotePeerConnectionState {
+class ReadyForDownload : RemotePeerConnectionState {
     override fun next(connection: RemotePeerConnection) {}
 
     override fun process(connection: RemotePeerConnection) {}

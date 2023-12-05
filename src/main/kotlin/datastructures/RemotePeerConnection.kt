@@ -4,13 +4,14 @@ import constants.PEER_MESSAGE_ID_LENGTH_BYTES
 import constants.PEER_MESSAGE_LENGTH_PREFIX_BYTES
 import datastructures.state.BitfieldState
 import datastructures.state.RemotePeerConnectionState
+import util.toInt
 import java.io.DataInputStream
 import java.io.OutputStream
 import java.net.Socket
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class RemotePeerConnection(socket: Socket) {
+class RemotePeerConnection(socket: Socket, private val metaInfo: MetaInfo) {
     var state: RemotePeerConnectionState = BitfieldState()
     private val inputStream: DataInputStream = DataInputStream(socket.getInputStream())
     private val outputStream: OutputStream = socket.getOutputStream()
@@ -69,6 +70,8 @@ class RemotePeerConnection(socket: Socket) {
         println("Sending payload: ${data.contentToString()}")
         outputStream.write(data)
     }
-}
 
-fun ByteArray.toInt(): Int = ByteBuffer.wrap(this).order(ByteOrder.BIG_ENDIAN).getInt()
+    fun download() {
+
+    }
+}

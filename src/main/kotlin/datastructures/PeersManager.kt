@@ -2,6 +2,9 @@ package datastructures
 
 import constants.NUM_BYTES_OF_EACH_PEER_IN_LIST
 import util.Encoders
+import util.toInt
+import util.toPort
+import util.toShort
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -49,7 +52,7 @@ class PeersManager(private val metaInfo: MetaInfo) {
     private fun remotePeerFrom(data: ByteArray): RemotePeer {
         val addr = data.copyOf(4)
         val portData = data.copyOfRange(4, data.size)
-        val port = ByteBuffer.wrap(portData).order(ByteOrder.BIG_ENDIAN).getShort().toInt() and 0xFFFF
+        val port = portData.toPort()
 
         val socket = InetSocketAddress(
             InetAddress.getByAddress(addr).hostAddress,

@@ -2,14 +2,15 @@ package datastructures.state
 
 import datastructures.PeerMessageType
 import datastructures.RemotePeerConnection
+import util.NetworkUtils.waitFor
 
-class UnchokeState : RemotePeerConnectionState {
-    override fun next(connection: RemotePeerConnection) {
-        connection.state = ReadyForDownload()
+internal class UnchokeState(override val connection: RemotePeerConnection) : RemotePeerConnectionState {
+    override fun next() {
+        connection.state = ReadyForDownload(connection)
     }
 
-    override fun process(connection: RemotePeerConnection) {
-        val message = connection.waitFor(PeerMessageType.UNCHOKE)
+    override fun process() {
+        val message = waitFor(PeerMessageType.UNCHOKE, connection.inputStream)
 
         println(message)
     }

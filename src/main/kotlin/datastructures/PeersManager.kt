@@ -56,6 +56,6 @@ class PeersManager(private val metaInfo: MetaInfo) {
             port
         )
 
-        return RemotePeer(socket)
+        return RemotePeer(socket, metaInfo)
     }
 }

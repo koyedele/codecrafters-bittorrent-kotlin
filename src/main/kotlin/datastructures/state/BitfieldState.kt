@@ -2,14 +2,15 @@ package datastructures.state
 
 import datastructures.PeerMessageType
 import datastructures.RemotePeerConnection
+import util.NetworkUtils.waitFor
 
-class BitfieldState : RemotePeerConnectionState {
-    override fun next(connection: RemotePeerConnection) {
-        connection.state = InterestedState()
+internal class BitfieldState(override val connection: RemotePeerConnection) : RemotePeerConnectionState {
+    override fun next() {
+        connection.state = InterestedState(connection)
     }
 
-    override fun process(connection: RemotePeerConnection) {
-        val message = connection.waitFor(PeerMessageType.BITFIELD)
+    override fun process() {
+        val message = waitFor(PeerMessageType.BITFIELD, connection.inputStream)
 
         println(message)
     }

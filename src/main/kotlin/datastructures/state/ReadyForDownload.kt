@@ -2,8 +2,8 @@ package datastructures.state
 
 import datastructures.RemotePeerConnection
 
-class ReadyForDownload : RemotePeerConnectionState {
-    override fun next(connection: RemotePeerConnection) {}
+internal class ReadyForDownload(override val connection: RemotePeerConnection) : RemotePeerConnectionState {
+    override fun next() {}
 
-    override fun process(connection: RemotePeerConnection) {}
+    override fun process() {}
 }

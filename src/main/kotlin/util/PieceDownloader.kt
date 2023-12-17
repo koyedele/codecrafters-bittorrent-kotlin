@@ -5,7 +5,8 @@ import datastructures.MetaInfo
 import datastructures.PeerMessage
 import datastructures.PeerMessageType
 import datastructures.RemotePeerConnection
-import kotlinx.coroutines.*
+import util.NetworkUtils.sendMessage
+import util.NetworkUtils.waitFor
 import kotlin.math.ceil
 
 class PieceDownloader(
@@ -17,7 +18,7 @@ class PieceDownloader(
     private val numPieces = ceil(totalFileLength / singlePieceLength.toDouble()).toInt()
     private val lastPieceLength = totalFileLength % singlePieceLength
 
-    suspend fun download(pieceNumber: Int): ByteArray {
+    fun download(pieceNumber: Int): ByteArray {
         if (pieceNumber < 0 || pieceNumber >= numPieces) {
             throw IllegalArgumentException(
                 "invalid piece number $pieceNumber. Expected between 0 and ${numPieces - 1}"
@@ -41,25 +42,22 @@ class PieceDownloader(
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private suspend fun downloadPiece(numRequests: Int): ByteArray = coroutineScope {
+    private fun downloadPiece(numRequests: Int): ByteArray {
         val messages = (1..numRequests)
             .map {
-                async(Dispatchers.Default.limitedParallelism(5)) {
-                    remotePeerConnection.waitFor(PeerMessageType.PIECE)
-                }
-            }.awaitAll()
+                waitFor(PeerMessageType.PIECE, remotePeerConnection.inputStream)
+            }
 
-        messages
+        return messages
             .sortedBy { it.payload.copyOfRange(0, 4).toInt() }
             .fold(ByteArray(0)) { data, message ->
-
-                data + message.payload.copyOfRange(8, message.payload.size)
+                val file = message.payload.copyOfRange(8, message.payload.size)
+                data + file
             }
     }
 
-    private fun sendRequestMessagesFor(pieceNumber: Int): Int {
-        val pieceLength = if (isLastPiece(pieceNumber)) lastPieceLength else singlePieceLength
+    private fun sendRequestMessagesFor(pieceIndex: Int): Int {
+        val pieceLength = if (isLastPiece(pieceIndex)) lastPieceLength else singlePieceLength
         val numBlocks = ceil(pieceLength / PIECE_DOWNLOAD_SIZE_BYTES.toDouble()).toInt()
         var lastBlockSize = pieceLength % PIECE_DOWNLOAD_SIZE_BYTES
 
@@ -68,9 +66,9 @@ class PieceDownloader(
         }
 
         for (index in 0..<numBlocks) {
-            val size = if (index == numBlocks - 1) lastBlockSize else PIECE_DOWNLOAD_SIZE_BYTES
-            val peerMessage = PeerMessage.requestMessageTypeFor(index, size)
-            remotePeerConnection.sendMessage(peerMessage)
+            val blockLength = if (index == numBlocks - 1) lastBlockSize else PIECE_DOWNLOAD_SIZE_BYTES
+            val peerMessage = PeerMessage.buildRequestMessageFor(pieceIndex, index, blockLength)
+            sendMessage(peerMessage, remotePeerConnection.outputStream)
         }
 
         return numBlocks

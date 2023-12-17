@@ -5,14 +5,13 @@ import datastructures.RemotePeer
 
 class HandshakeCommand(
     private val filePath: String,
-    peerAddress: String
+    private val peerAddress: String
 ) : Command {
-    private val remotePeer = RemotePeer(peerAddress)
-
     override fun run() {
         val metaInfo = MetaInfo.fromFile(filePath)
+        val remotePeer = RemotePeer(peerAddress, metaInfo)
 
-        val peerId = remotePeer.handShake(metaInfo)
+        val peerId = remotePeer.handShake()
         println("Peer ID: $peerId")
         remotePeer.close()
     }

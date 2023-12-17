@@ -2,7 +2,6 @@ package commands
 
 import datastructures.MetaInfo
 import datastructures.PeersManager
-import kotlinx.coroutines.runBlocking
 
 class DownloadPieceCommand(
     private val outputFilePath: String,
@@ -12,13 +11,12 @@ class DownloadPieceCommand(
     override fun run() {
         val metaInfo = MetaInfo.fromFile(metaInfoFilePath)
         val peersManager = PeersManager(metaInfo)
-        val remotePeers = peersManager.remotePeers()
-        val remotePeer = remotePeers.random()
-        val peerId = remotePeer.handShake(metaInfo)
+
+        val remotePeer = peersManager.remotePeers().random()
+        val peerId = remotePeer.handShake()
         println(peerId)
-        remotePeer.getReadyForDownload()
-        runBlocking {
-            remotePeer.downloadPiece(metaInfo, pieceNumber, outputFilePath)
-        }
+
+        remotePeer.downloadPiece(pieceNumber, outputFilePath)
+        println("Piece $pieceNumber downloaded to $outputFilePath.")
     }
 }

@@ -12,15 +12,23 @@ class PeerMessage(val messageType: PeerMessageType, var payload: ByteArray) {
     }
 
     override fun toString(): String {
-        return "PeerMessage(messageLength=$messageLength, messageType=$messageType, payload=${payload.contentToString()})"
+        val payloadContents = StringBuilder()
+
+        if (payload.size > 16) {
+            payloadContents.append(payload.slice(0..15)).append("...")
+        } else {
+            payloadContents.append(payload.contentToString())
+        }
+
+        return "PeerMessage(messageLength=$messageLength, messageType=$messageType, payload=$payloadContents)"
     }
 
     companion object {
-        fun requestMessageTypeFor(index: Int, blockSize: Int): PeerMessage {
+        fun buildRequestMessageFor(pieceNumber: Int, index: Int, blockSize: Int): PeerMessage {
             val payload = ByteBuffer
                 .allocate(12)
                 .order(ByteOrder.BIG_ENDIAN)
-                .putInt(index)
+                .putInt(pieceNumber)
                 .putInt(index * PIECE_DOWNLOAD_SIZE_BYTES)
                 .putInt(blockSize)
 

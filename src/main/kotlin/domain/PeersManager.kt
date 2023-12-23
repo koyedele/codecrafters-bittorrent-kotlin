@@ -3,6 +3,7 @@ package domain
 import constants.NUM_BYTES_OF_EACH_PEER_IN_LIST
 import datastructures.DictValue
 import datastructures.MetaInfo
+import mu.KotlinLogging
 import util.Encoders
 import util.toPort
 import java.net.HttpURLConnection
@@ -13,6 +14,7 @@ import java.nio.ByteBuffer
 
 class PeersManager(private val metaInfo: MetaInfo) {
     private val peers: List<RemotePeer> by lazy { retrieveRemotePeers() }
+    private val logger = KotlinLogging.logger {}
 
     fun getPeerAddresses(): List<String> = peers.map { it.toString() }
 
@@ -35,6 +37,7 @@ class PeersManager(private val metaInfo: MetaInfo) {
     }
 
     private fun retrieveRemotePeers(): List<RemotePeer> {
+        logger.info { "Retrieving remote peers..." }
         val params = getParamsString()
         val url = URL("${metaInfo.trackerUrl()}?$params")
         val con: HttpURLConnection = url.openConnection() as HttpURLConnection

@@ -1,9 +1,13 @@
 package domain
 
 import datastructures.MetaInfo
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.ceil
 
@@ -17,7 +21,7 @@ class DownloadManager(
     private val numPieces = ceil(totalFileLength / singlePieceLength.toDouble()).toInt()
     private val workQueue = Channel<Int>(numPieces)
     private val numDownloadedPieces = AtomicInteger(0)
-    private val pieceData = mutableMapOf<Int, ByteArray>()
+    private val pieceData = ConcurrentHashMap<Int, ByteArray>()
 
     private lateinit var peers: List<RemotePeer>
     private lateinit var peersQueue: Channel<RemotePeer>
@@ -66,11 +70,11 @@ class DownloadManager(
 
     private fun assembleOutputFile() {
         val output = File(outputFilePath)
-        val keys = pieceData.keys.sorted()
+        val fullData = pieceData.keys
+            .sorted()
+            .fold(ByteArray(0)) { acc, index -> acc + pieceData[index]!! }
 
-        for (index in keys){
-            pieceData[index]?.let { output.writeBytes(it) }
-        }
+        output.writeBytes(fullData)
     }
 
     private fun cleanupResources() {

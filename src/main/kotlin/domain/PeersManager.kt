@@ -18,6 +18,8 @@ class PeersManager(private val metaInfo: MetaInfo) {
 
     fun remotePeers(): List<RemotePeer> = peers.map { it }
 
+    fun randomRemotePeer(): RemotePeer = remotePeers().random()
+
     private fun getParamsString(): String {
         val params: Map<String, String> = mapOf(
             "info_hash" to Encoders.urlEncode(metaInfo.infoHashBytes()),

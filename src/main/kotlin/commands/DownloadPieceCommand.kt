@@ -12,9 +12,7 @@ class DownloadPieceCommand(
         val metaInfo = MetaInfo.fromFile(metaInfoFilePath)
         val peersManager = PeersManager(metaInfo)
 
-        val remotePeer = peersManager.remotePeers().random()
-        val peerId = remotePeer.handShake()
-        println(peerId)
+        val remotePeer = peersManager.randomRemotePeer()
 
         remotePeer.downloadPiece(pieceNumber, outputFilePath)
         println("Piece $pieceNumber downloaded to $outputFilePath.")

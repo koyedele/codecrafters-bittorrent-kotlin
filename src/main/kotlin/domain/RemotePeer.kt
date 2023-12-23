@@ -82,7 +82,7 @@ class RemotePeer {
         }
 
         if (!this::peerConnection.isInitialized) {
-            throw IllegalStateException("peer messages cannot be read because peer handshake has not been done")
+            handShake()
         }
 
         while (peerConnection.state !is ReadyForDownload) {

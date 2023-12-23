@@ -12,6 +12,7 @@ fun main(args: Array<String>) {
             "peers" -> PeersCommand(args[1]).run()
             "handshake" -> HandshakeCommand(args[1], args[2]).run()
             "download_piece" -> DownloadPieceCommand(args[2], args[3], args[4].toInt()).run()
+            "download" -> DownloadFileCommand(args[2], args[3]).run()
             else -> println("Unknown command $command")
         }
     } catch (e: Exception) {

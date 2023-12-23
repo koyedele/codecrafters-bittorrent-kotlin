@@ -1,12 +1,16 @@
-package util
+package domain
 
 import constants.PIECE_DOWNLOAD_SIZE_BYTES
 import datastructures.MetaInfo
 import datastructures.PeerMessage
 import datastructures.PeerMessageType
-import domain.RemotePeerConnection
+import util.Crypto
+import util.Encoders
 import util.NetworkUtils.sendMessage
 import util.NetworkUtils.waitFor
+import util.toInt
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import kotlin.math.ceil
 
 class PieceDownloader(
@@ -67,7 +71,7 @@ class PieceDownloader(
 
         for (index in 0..<numBlocks) {
             val blockLength = if (index == numBlocks - 1) lastBlockSize else PIECE_DOWNLOAD_SIZE_BYTES
-            val peerMessage = PeerMessage.buildRequestMessageFor(pieceIndex, index, blockLength)
+            val peerMessage = buildRequestMessageFor(pieceIndex, index, blockLength)
             sendMessage(peerMessage, remotePeerConnection.outputStream)
         }
 
@@ -75,6 +79,21 @@ class PieceDownloader(
     }
 
     private fun isLastPiece(pieceNumber: Int) = pieceNumber == numPieces - 1
+
+    private fun buildRequestMessageFor(pieceNumber: Int, index: Int, blockSize: Int): PeerMessage {
+        val payload = ByteBuffer
+            .allocate(12)
+            .order(ByteOrder.BIG_ENDIAN)
+            .putInt(pieceNumber)
+            .putInt(index * PIECE_DOWNLOAD_SIZE_BYTES)
+            .putInt(blockSize)
+
+        payload.rewind()
+        val data = ByteArray(payload.remaining())
+        payload.get(data)
+
+        return PeerMessage(PeerMessageType.REQUEST, data)
+    }
 
     class InvalidPieceException(message: String) : Exception(message)
 }

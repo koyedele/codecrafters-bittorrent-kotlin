@@ -6,7 +6,6 @@ import constants.SELF_PEER_ID
 import datastructures.MetaInfo
 import domain.state.ReadyForDownload
 import util.Encoders
-import util.PieceDownloader
 import java.io.DataInputStream
 import java.io.File
 import java.net.InetAddress

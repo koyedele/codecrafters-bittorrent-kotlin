@@ -17,7 +17,7 @@ class DownloadManager(
     private val numPieces = ceil(totalFileLength / singlePieceLength.toDouble()).toInt()
     private val workQueue = Channel<Int>(numPieces)
     private val numDownloadedPieces = AtomicInteger(0)
-    private val pieceData = arrayOfNulls<ByteArray>(numPieces)
+    private val pieceData = mutableMapOf<Int, ByteArray>()
 
     private lateinit var peers: List<RemotePeer>
     private lateinit var peersQueue: Channel<RemotePeer>
@@ -34,6 +34,7 @@ class DownloadManager(
 
     private suspend fun doDownload() = coroutineScope {
         withContext(Dispatchers.IO) {
+            println("Total number of pieces: $numPieces")
             repeat(numPieces) { workQueue.send(it) }
             repeat(peers.size) { peersQueue.send(peers[it]) }
             repeat(peers.size) { runDownloader(peersQueue, workQueue) }
@@ -65,8 +66,10 @@ class DownloadManager(
 
     private fun assembleOutputFile() {
         val output = File(outputFilePath)
-        for (bytes in pieceData){
-            output.writeBytes(bytes!!)
+        val keys = pieceData.keys.sorted()
+
+        for (index in keys){
+            pieceData[index]?.let { output.writeBytes(it) }
         }
     }
 

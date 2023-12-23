@@ -37,7 +37,7 @@ class DownloadManager(
             println("Total number of pieces: $numPieces")
             repeat(numPieces) { workQueue.send(it) }
             repeat(peers.size) { peersQueue.send(peers[it]) }
-            repeat(peers.size) { runDownloader(peersQueue, workQueue) }
+            repeat(numPieces) { runDownloader(peersQueue, workQueue) }
         }
     }
 

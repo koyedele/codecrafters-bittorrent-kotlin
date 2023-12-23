@@ -5,7 +5,6 @@ import constants.PEER_HANDSHAKE_LENGTH_BYTES
 import constants.SELF_PEER_ID
 import datastructures.MetaInfo
 import domain.state.ReadyForDownload
-import mu.KotlinLogging
 import util.Encoders
 import java.io.DataInputStream
 import java.io.File
@@ -19,7 +18,6 @@ class RemotePeer {
     private val socket: Socket = SocketFactory.getDefault().createSocket()
     private val metaInfo: MetaInfo
     private lateinit var peerConnection: RemotePeerConnection
-    private val logger = KotlinLogging.logger {}
 
     constructor(address: String, metaInfo: MetaInfo) {
         val (addr, port) = address.split(":")
@@ -90,7 +88,7 @@ class RemotePeer {
         while (peerConnection.state !is ReadyForDownload) {
             peerConnection.processState()
         }
-        logger.info { "Connection to $this is now ready for download" }
+        println("Connection to $this is now ready for download")
     }
 
     private fun handShakeMessage(): ByteArray {

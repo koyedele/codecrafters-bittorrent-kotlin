@@ -4,21 +4,18 @@ import constants.PEER_MESSAGE_ID_LENGTH_BYTES
 import constants.PEER_MESSAGE_LENGTH_PREFIX_BYTES
 import datastructures.PeerMessage
 import datastructures.PeerMessageType
-import mu.KotlinLogging
 import java.io.DataInputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 object NetworkUtils {
-    private val logger = KotlinLogging.logger {}
-    
     fun waitFor(messageType: PeerMessageType, inputStream: DataInputStream): PeerMessage {
         var message = readMessage(inputStream)
-        logger.info { "Got message: $message, expecting $messageType" }
+        println("Got message: $message, expecting $messageType")
         while (message.messageType != messageType) {
             message = readMessage(inputStream)
-            logger.info { "Got message: $message, expecting $messageType" }
+            println("Got message: $message, expecting $messageType")
         }
 
         return message
@@ -36,7 +33,7 @@ object NetworkUtils {
         buffer.rewind()
         val data = ByteArray(buffer.remaining())
         buffer.get(data)
-        logger.info { "Sending payload: ${data.contentToString()}" }
+        println("Sending payload: ${data.contentToString()}")
         outputStream.write(data)
     }
 

@@ -20,14 +20,17 @@ class DownloadManager(
     private val numDownloadedPieces = AtomicInteger(0)
     private val logger = KotlinLogging.logger {}
 
-    private val peers: List<RemotePeer> by lazy { peersManager.remotePeers() }
+    private lateinit var peers: List<RemotePeer>
     private lateinit var peersQueue: Channel<RemotePeer>
 
     suspend fun downloadFile() {
+        peers = peersManager.remotePeers()
         peersQueue = Channel(peers.size)
+
         doDownload()
-        workQueue.close()
         assembleOutputFile()
+
+        cleanupResources()
     }
 
     private suspend fun doDownload() = coroutineScope {
@@ -46,7 +49,7 @@ class DownloadManager(
                 val peer = peers.receive()
                 logger.info { "Started downloading piece #$piece from peer $peer" }
                 try {
-                    peer.downloadPiece(piece, "$outputFilePath-$piece")
+                    peer.downloadPiece(piece, fileNameFor(piece))
                 } catch (e: Exception) {
                     logger.info { "Error while downloading piece #$piece" }
                     logger.info { e }
@@ -63,8 +66,19 @@ class DownloadManager(
     private fun assembleOutputFile() {
         val output = File(outputFilePath)
         repeat(numPieces) {
-            val file = File("$outputFilePath-$it")
+            val file = File(fileNameFor(it))
             output.writeBytes(file.readBytes())
+        }
+    }
+
+    private fun fileNameFor(piece: Int) = "$outputFilePath-$piece"
+
+    private fun cleanupResources() {
+        workQueue.close()
+        peersQueue.close()
+
+        repeat(numPieces) {
+            File(fileNameFor(it)).delete()
         }
     }
 }

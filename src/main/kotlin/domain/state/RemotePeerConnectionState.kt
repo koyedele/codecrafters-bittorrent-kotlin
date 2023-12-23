@@ -1,6 +1,6 @@
-package datastructures.state
+package domain.state
 
-import datastructures.RemotePeerConnection
+import domain.RemotePeerConnection
 
 interface RemotePeerConnectionState {
     val connection: RemotePeerConnection

@@ -1,7 +1,7 @@
-package datastructures
+package domain
 
-import datastructures.state.BitfieldState
-import datastructures.state.RemotePeerConnectionState
+import domain.state.BitfieldState
+import domain.state.RemotePeerConnectionState
 import java.io.DataInputStream
 import java.io.OutputStream
 import java.net.Socket

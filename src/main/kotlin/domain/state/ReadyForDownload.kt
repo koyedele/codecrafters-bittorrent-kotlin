@@ -1,6 +1,6 @@
-package datastructures.state
+package domain.state
 
-import datastructures.RemotePeerConnection
+import domain.RemotePeerConnection
 
 internal class ReadyForDownload(override val connection: RemotePeerConnection) : RemotePeerConnectionState {
     override fun next() {}

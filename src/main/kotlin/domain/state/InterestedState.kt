@@ -1,8 +1,8 @@
-package datastructures.state
+package domain.state
 
 import datastructures.PeerMessage
 import datastructures.PeerMessageType
-import datastructures.RemotePeerConnection
+import domain.RemotePeerConnection
 import util.NetworkUtils.sendMessage
 
 internal class InterestedState(override val connection: RemotePeerConnection) : RemotePeerConnectionState {

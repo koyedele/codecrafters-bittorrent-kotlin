@@ -1,7 +1,7 @@
 package commands
 
 import datastructures.MetaInfo
-import datastructures.RemotePeer
+import domain.RemotePeer
 
 class HandshakeCommand(
     private val filePath: String,

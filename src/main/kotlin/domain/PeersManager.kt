@@ -1,6 +1,8 @@
-package datastructures
+package domain
 
 import constants.NUM_BYTES_OF_EACH_PEER_IN_LIST
+import datastructures.DictValue
+import datastructures.MetaInfo
 import util.Encoders
 import util.toPort
 import java.net.HttpURLConnection

@@ -1,7 +1,7 @@
 package commands
 
 import datastructures.MetaInfo
-import datastructures.PeersManager
+import domain.PeersManager
 
 class PeersCommand(private val filePath: String) : Command {
     override fun run() {

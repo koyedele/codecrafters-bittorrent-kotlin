@@ -1,7 +1,7 @@
 package commands
 
 import datastructures.MetaInfo
-import datastructures.PeersManager
+import domain.PeersManager
 
 class DownloadPieceCommand(
     private val outputFilePath: String,

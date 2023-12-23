@@ -1,9 +1,10 @@
-package datastructures
+package domain
 
 import constants.BITTORRENT_PROTOCOL_STRING
 import constants.PEER_HANDSHAKE_LENGTH_BYTES
 import constants.SELF_PEER_ID
-import datastructures.state.ReadyForDownload
+import datastructures.MetaInfo
+import domain.state.ReadyForDownload
 import util.Encoders
 import util.PieceDownloader
 import java.io.DataInputStream

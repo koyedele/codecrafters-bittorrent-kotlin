@@ -4,7 +4,7 @@ import constants.PIECE_DOWNLOAD_SIZE_BYTES
 import datastructures.MetaInfo
 import datastructures.PeerMessage
 import datastructures.PeerMessageType
-import datastructures.RemotePeerConnection
+import domain.RemotePeerConnection
 import util.NetworkUtils.sendMessage
 import util.NetworkUtils.waitFor
 import kotlin.math.ceil

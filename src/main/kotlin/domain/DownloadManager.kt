@@ -17,6 +17,7 @@ class DownloadManager(
     private val numPieces = ceil(totalFileLength / singlePieceLength.toDouble()).toInt()
     private val workQueue = Channel<Int>(numPieces)
     private val numDownloadedPieces = AtomicInteger(0)
+    private val pieceData = arrayOfNulls<ByteArray>(numPieces)
 
     private lateinit var peers: List<RemotePeer>
     private lateinit var peersQueue: Channel<RemotePeer>
@@ -47,7 +48,8 @@ class DownloadManager(
                 val peer = peers.receive()
                 println("Started downloading piece #$piece from peer $peer")
                 try {
-                    peer.downloadPiece(piece, fileNameFor(piece))
+                    val bytes = peer.downloadPieceBytes(piece)
+                    pieceData[piece] = bytes
                 } catch (e: Exception) {
                     println("Error while downloading piece #$piece")
                     println(e)
@@ -63,20 +65,13 @@ class DownloadManager(
 
     private fun assembleOutputFile() {
         val output = File(outputFilePath)
-        repeat(numPieces) {
-            val file = File(fileNameFor(it))
-            output.writeBytes(file.readBytes())
+        for (bytes in pieceData){
+            output.writeBytes(bytes!!)
         }
     }
-
-    private fun fileNameFor(piece: Int) = "$outputFilePath-$piece"
 
     private fun cleanupResources() {
         workQueue.close()
         peersQueue.close()
-
-        repeat(numPieces) {
-            File(fileNameFor(it)).delete()
-        }
     }
 }

@@ -58,12 +58,18 @@ class RemotePeer {
     }
 
     fun downloadPiece(pieceNumber: Int, outputFile: String) {
+        val piece = downloadPieceBytes(pieceNumber)
+        val file = File(outputFile)
+        file.writeBytes(piece)
+    }
+
+    fun downloadPieceBytes(pieceNumber: Int): ByteArray {
         getReadyForDownload()
 
         val downloader = PieceDownloader(metaInfo, peerConnection)
         val piece = downloader.download(pieceNumber)
-        val file = File(outputFile)
-        file.writeBytes(piece)
+
+        return piece
     }
 
     fun close() {
